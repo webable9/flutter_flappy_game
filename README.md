@@ -1,6 +1,10 @@
 # flutter_flappy_game
 
-A new Flutter project.
+Intro 모바일 게임제작 (초보부터 고급까지)
+
+https://www.youtube.com/watch?v=yKk7jsxJm-g&list=PLwUg6hFuXV85yKVYJkL6EaEpJ-3FTs8QI
+
+![CreatePlan](./lib/screenshot/main.png)
 
 ## Getting Started
 
