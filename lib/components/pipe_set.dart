@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flame/components/component.dart';
 import 'package:flame/position.dart';
 import 'package:flame/sprite.dart';
+import 'package:flutter_flappy_game/game_state.dart';
 import 'package:flutter_flappy_game/main.dart';
 import 'package:flutter_flappy_game/options.dart';
 
@@ -17,6 +18,7 @@ class PipeSet extends Component {
 
   double pipePos = size.width;
   int pipeLevel = 1;
+  bool hadScored = false;
 
   @override
   void render(Canvas c) {
@@ -29,13 +31,37 @@ class PipeSet extends Component {
 
   @override
   void update(double t) {
-    if (pipePos < -pipeW) {
-      pipePos = size.width;
-      pipeLevel = Random().nextInt(5);
-      if (pipeLevel == 0) {
-        pipeLevel = 6;
-      }
+    switch (gameState) {
+      case GameState.pause:
+        pipePos = size.width;
+        hadScored = false;
+        break;
+      case GameState.play:
+        if (pipePos < -pipeW) {
+          pipePos = size.width;
+          hadScored = false;
+          pipeLevel = Random().nextInt(5);
+          if (pipeLevel == 0) {
+            pipeLevel = 6;
+          }
+        }
+        pipePos -= t * (30 + GAME_SPEED);
+        break;
+      case GameState.gameover:
+        break;
     }
-    pipePos -= t * (30 + GAME_SPEED);
+  }
+
+  Rect getPipeUpRect() {
+    return Rect.fromLTWH(pipePos, pipeH / 7 * (pipeLevel - 7), pipeW, pipeH);
+  }
+
+  Rect getPipeDownRect() {
+    return Rect.fromLTWH(
+        pipePos, pipeH / 7 * (pipeLevel + pipeGap), pipeW, pipeH);
+  }
+
+  void scoreUpdate() {
+    hadScored = true;
   }
 }

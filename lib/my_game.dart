@@ -26,8 +26,8 @@ class MyGame extends BaseGame with TapDetector {
     this
       ..add(
           SpriteComponent.fromSprite(size.width, size.height, Sprite("bg.png")))
-      ..add(_bird)
       ..add(_pipeSet)
+      ..add(_bird)
       ..add(_floor)
       ..add(_titles);
   }
@@ -40,6 +40,18 @@ class MyGame extends BaseGame with TapDetector {
       print("Game Over");
       gameState = GameState.gameover;
     }
+
+    if (checkIf2CompoCollision(_bird.toRect(), _pipeSet.getPipeUpRect())) {
+      print("Game Over");
+      gameState = GameState.gameover;
+    }
+
+    if (checkIf2CompoCollision(_bird.toRect(), _pipeSet.getPipeDownRect())) {
+      print("Game Over");
+      gameState = GameState.gameover;
+    }
+
+    checkIfBirdPassPipe();
   }
 
   @override
@@ -61,5 +73,16 @@ class MyGame extends BaseGame with TapDetector {
   bool checkIf2CompoCollision(Rect item1, Rect item2) {
     var intersectedRect = item1.intersect(item2);
     return intersectedRect.width > 2 && intersectedRect.height > 2;
+  }
+
+  bool checkIfBirdPassPipe() {
+    if (_pipeSet.hadScored) {
+      return false;
+    } else {
+      if (_pipeSet.getPipeUpRect().right < _bird.toRect().left) {
+        print("score:");
+        _pipeSet.scoreUpdate();
+      }
+    }
   }
 }
