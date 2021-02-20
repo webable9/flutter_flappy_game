@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flame/flame.dart';
 import 'package:flame/game/base_game.dart';
 import 'package:flame/game/game.dart';
 import 'package:flame/gestures.dart';
@@ -7,6 +8,7 @@ import 'package:flame/sprite.dart';
 import 'package:flutter_flappy_game/components/bird.dart';
 import 'package:flame/components/component.dart';
 import 'package:flutter_flappy_game/components/floor.dart';
+import 'package:flutter_flappy_game/components/score.dart';
 import 'package:flutter_flappy_game/components/titles.dart';
 import 'package:flutter_flappy_game/components/pipe_set.dart';
 import 'package:flutter_flappy_game/game_state.dart';
@@ -17,41 +19,52 @@ class MyGame extends BaseGame with TapDetector {
   Floor _floor;
   Titles _titles;
   PipeSet _pipeSet;
+  Score _score;
 
   MyGame() {
     _bird = Bird();
     _floor = Floor();
     _pipeSet = PipeSet();
     _titles = Titles();
+    _score = Score();
     this
       ..add(
           SpriteComponent.fromSprite(size.width, size.height, Sprite("bg.png")))
       ..add(_pipeSet)
       ..add(_bird)
       ..add(_floor)
-      ..add(_titles);
+      ..add(_titles)
+      ..add(_score);
   }
 
   @override
   void update(double t) {
     super.update(t);
 
-    if (checkIf2CompoCollision(_bird.toRect(), _floor.toRect())) {
-      print("Game Over");
-      gameState = GameState.gameover;
-    }
+    if (gameState == GameState.play) {
+      if (checkIf2CompoCollision(_bird.toRect(), _floor.toRect())) {
+        print("Game Over");
+        setGameOver();
+      }
 
-    if (checkIf2CompoCollision(_bird.toRect(), _pipeSet.getPipeUpRect())) {
-      print("Game Over");
-      gameState = GameState.gameover;
-    }
+      if (checkIf2CompoCollision(_bird.toRect(), _pipeSet.getPipeUpRect())) {
+        print("Game Over");
+        setGameOver();
+      }
 
-    if (checkIf2CompoCollision(_bird.toRect(), _pipeSet.getPipeDownRect())) {
-      print("Game Over");
-      gameState = GameState.gameover;
-    }
+      if (checkIf2CompoCollision(_bird.toRect(), _pipeSet.getPipeDownRect())) {
+        print("Game Over");
+        setGameOver();
+      }
 
-    checkIfBirdPassPipe();
+      checkIfBirdPassPipe();
+    }
+  }
+
+  void setGameOver() {
+    Flame.audio.play("hit.wav");
+    Flame.audio.play("die.mp3");
+    gameState = GameState.gameover;
   }
 
   @override
@@ -66,6 +79,7 @@ class MyGame extends BaseGame with TapDetector {
         break;
       case GameState.gameover:
         gameState = GameState.pause;
+        _score.resetScore();
         break;
     }
   }
@@ -75,14 +89,13 @@ class MyGame extends BaseGame with TapDetector {
     return intersectedRect.width > 2 && intersectedRect.height > 2;
   }
 
-  bool checkIfBirdPassPipe() {
-    if (_pipeSet.hadScored) {
-      return false;
-    } else {
-      if (_pipeSet.getPipeUpRect().right < _bird.toRect().left) {
-        print("score:");
-        _pipeSet.scoreUpdate();
-      }
+  void checkIfBirdPassPipe() {
+    if (_pipeSet.hadScored) return;
+
+    if (_pipeSet.getPipeUpRect().right < _bird.toRect().left) {
+      Flame.audio.play("point.mp3");
+      _score.addScore();
+      _pipeSet.scoreUpdate();
     }
   }
 }
